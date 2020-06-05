@@ -39,7 +39,7 @@ public class MusicController {
     }
 
     @DeleteMapping("/{musicId}")
-    public  ResponseEntity<?> deleteMusic(@PathVariable Long musicId) {
+    public ResponseEntity<?> deleteMusic(@PathVariable Long musicId) {
         return musicRepository.findById(musicId)
                 .map(music -> {
                     musicRepository.delete(music);
