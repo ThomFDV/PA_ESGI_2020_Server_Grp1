@@ -30,7 +30,7 @@ import java.util.Set;
 public class AuthController {
 
     @Autowired
-    AuthenticationManagerBuilder authenticationManager;
+    AuthenticationManager authenticationManager;
 
     @Autowired
     UserRepository userRepository;
@@ -50,9 +50,7 @@ public class AuthController {
                 login.getUsername(),
                 login.getPassword()
         );
-        System.out.println("\n\n\n\n" + authenticationToken + "\n\n\n\n");
-        Authentication authentication = authenticationManager.getObject().authenticate(authenticationToken);
-        System.out.println("\n\n\n\nEntering\n\n\n\n");
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 

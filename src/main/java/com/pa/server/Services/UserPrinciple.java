@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+
 public class UserPrinciple implements UserDetails {
     private static final long serialVersionUID = 1L;
 
@@ -27,7 +28,9 @@ public class UserPrinciple implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserPrinciple(Long id, String name, String username, String email, String password, Collection<? extends GrantedAuthority> authorities) {
+    public UserPrinciple(Long id, String name,
+                         String username, String email, String password,
+                         Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.name = name;
         this.username = username;
@@ -37,9 +40,9 @@ public class UserPrinciple implements UserDetails {
     }
 
     public static UserPrinciple build(User user) {
-        List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
-                .collect(Collectors.toList());
+        List<GrantedAuthority> authorities = user.getRoles().stream().map(role ->
+                new SimpleGrantedAuthority(role.getName().name())
+        ).collect(Collectors.toList());
 
         return new UserPrinciple(
                 user.getId(),
@@ -59,13 +62,13 @@ public class UserPrinciple implements UserDetails {
         return name;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
     @Override
     public String getUsername() {
         return username;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     @Override
@@ -80,22 +83,22 @@ public class UserPrinciple implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
     }
 
     @Override
