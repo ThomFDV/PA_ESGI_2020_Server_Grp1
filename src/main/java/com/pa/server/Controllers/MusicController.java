@@ -34,14 +34,8 @@ public class MusicController {
         return musicRepository.findByArtistId(artistId);
     }
 
-    @PostMapping("")
-    @PreAuthorize("hasRole('ARTIST') or hasRole('ADMIN')")
-    public ResponseEntity<Music> createMusic(@Valid @RequestBody Music music) {
-        musicRepository.save(music);
-        return ResponseEntity.ok(music);
-    }
-
     @PostMapping("/{artistId}")
+    @PreAuthorize("hasRole('ARTIST') or hasRole('ADMIN')")
     public Music addMusic(@PathVariable long artistId, @Valid @RequestBody Music music) {
         return artistRepository.findById(artistId)
                 .map(artist -> {
