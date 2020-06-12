@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -34,6 +35,7 @@ public class MusicController {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ARTIST') or hasRole('ADMIN')")
     public ResponseEntity<Music> createMusic(@Valid @RequestBody Music music) {
         musicRepository.save(music);
         return ResponseEntity.ok(music);
@@ -49,6 +51,7 @@ public class MusicController {
     }
 
     @PutMapping("/{musicId}")
+    @PreAuthorize("hasRole('ARTIST') or hasRole('ADMIN')")
     public Music updateMusic(@PathVariable Long musicId, @Valid @RequestBody Music music) {
         return musicRepository.findById(musicId)
                 .map(musicFound -> {
@@ -58,6 +61,7 @@ public class MusicController {
     }
 
     @DeleteMapping("/{musicId}")
+    @PreAuthorize("hasRole('ARTIST') or hasRole('ADMIN')")
     public ResponseEntity<?> deleteMusic(@PathVariable Long musicId) {
         return musicRepository.findById(musicId)
                 .map(music -> {
