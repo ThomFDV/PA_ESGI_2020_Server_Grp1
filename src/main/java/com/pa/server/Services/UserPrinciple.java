@@ -6,9 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -53,7 +51,13 @@ public class UserPrinciple implements UserDetails {
                 authorities
         );
     }
-
+    public Map<String, Object> toMap() {
+        Map<String, Object> claimMap = new HashMap<>();
+        claimMap.put("username", username);
+        claimMap.put("name", name);
+        claimMap.put("email", email);
+        return claimMap;
+    }
     public Long getId() {
         return id;
     }
