@@ -9,6 +9,7 @@ import com.pa.server.Models.RoleName;
 import com.pa.server.Models.User;
 import com.pa.server.Repositories.RoleRepository;
 import com.pa.server.Repositories.UserRepository;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,15 +60,16 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<String> registerUser(@Valid @RequestBody SignUpForm signUp) {
+    public ResponseEntity<JSONObject> registerUser(@Valid @RequestBody SignUpForm signUp) {
+        JSONObject response = new JSONObject();
         if (userRepository.existsByUsername(signUp.getUsername())) {
-            return new ResponseEntity<String>("Fail -> Username is already taken!",
-                    HttpStatus.BAD_REQUEST);
+            response.put("message", "Fail -> Username is already taken!");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         if (userRepository.existsByEmail(signUp.getEmail())) {
-            return new ResponseEntity<String>("Fail -> Email is already in use!",
-                    HttpStatus.BAD_REQUEST);
+            response.put("message", "Fail -> Email is already in use!");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         // Creating user's account
@@ -100,7 +102,9 @@ public class AuthController {
 
         user.setRoles(roles);
         userRepository.save(user);
+        response.put("message", "User registered successfully!");
+        response.put("user", user);
 
-        return ResponseEntity.ok().body("User registered successfully!");
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }
