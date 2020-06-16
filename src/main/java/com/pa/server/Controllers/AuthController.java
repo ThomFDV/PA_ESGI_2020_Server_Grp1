@@ -60,7 +60,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<JSONObject> registerUser(@Valid @RequestBody SignUpForm signUp) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpForm signUp) {
         JSONObject response = new JSONObject();
         if (userRepository.existsByUsername(signUp.getUsername())) {
             response.put("message", "Fail -> Username is already taken!");
@@ -105,6 +105,6 @@ public class AuthController {
         response.put("message", "User registered successfully!");
         response.put("user", user);
 
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return ResponseEntity.ok(response);
     }
 }
