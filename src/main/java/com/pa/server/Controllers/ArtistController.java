@@ -7,11 +7,13 @@ import com.pa.server.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/artist")
@@ -23,6 +25,12 @@ public class ArtistController {
     @GetMapping("")
     public Page<Artist> getArtists(Pageable pageable) {
         return artistRepository.findAll(pageable);
+    }
+
+    @GetMapping("/{artistId}")
+    public ResponseEntity<Optional<Artist>> getArtistById(@PathVariable long artistId) {
+        Optional<Artist> artist = artistRepository.findById(artistId);
+        return new ResponseEntity<>(artist, HttpStatus.OK);
     }
 
     @PostMapping("")
