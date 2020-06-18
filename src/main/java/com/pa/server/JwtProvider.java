@@ -24,8 +24,6 @@ public class JwtProvider {
 
         UserPrinciple userPrincipal = (UserPrinciple) authentication.getPrincipal();
 
-        System.out.println("\n\n\n" + userPrincipal.getId().toString() + "\n\n\n");
-
         return Jwts.builder()
                 .setSubject(userPrincipal.getId().toString())
                 .setClaims(userPrincipal.toMap())
