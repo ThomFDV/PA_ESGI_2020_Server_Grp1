@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Objects;
 
 @Service
 public class FileStorageService {
@@ -38,7 +39,10 @@ public class FileStorageService {
 
         try {
             if(fileName.contains("..")) {
-                throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
+                throw new FileStorageException("Sorry! File name contains invalid path sequence " + fileName);
+            }
+            if(!Objects.equals(file.getContentType(), "audio/mpeg")) {
+                throw new FileStorageException("Sorry! File type is not authorized. Please try with MP3");
             }
 
             Path targetLocation = this.fileStorageLocation.resolve(fileName);

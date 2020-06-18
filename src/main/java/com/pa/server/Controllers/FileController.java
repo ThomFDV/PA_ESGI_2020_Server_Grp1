@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.core.io.Resource;
@@ -15,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/file")
@@ -37,21 +37,14 @@ public class FileController {
         return new UploadFileResponse(fileName, fileDownloadUri, file.getContentType(), file.getSize());
     }
 
-    @GetMapping("/download/{fileName:.+}")
+    @GetMapping("/download/{fileName}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) throws MyFileNotFoundException {
 
-        Resource resource = fileStorageService.loadFileAsResource(fileName);
+        String fullFileName = fileName + ".mp3";
 
-        String contentType = null;
-        try {
-            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-        } catch (IOException e) {
-            logger.info("Could not determine file type");
-        }
+        Resource resource = fileStorageService.loadFileAsResource(fullFileName);
 
-        if(contentType == null) {
-            contentType = "application/octet-stream";
-        }
+        String contentType = "audio/mpeg";
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
