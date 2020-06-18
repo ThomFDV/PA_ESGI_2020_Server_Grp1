@@ -22,7 +22,7 @@ public class UserController {
     UserRepository userRepository;
 
     @GetMapping("")
-    public Page<User> getusers(Pageable pageable) {
+    public Page<User> getUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
     }
 
@@ -33,13 +33,13 @@ public class UserController {
     }
 
     @PostMapping("")
-    public ResponseEntity<User> createuser(@Valid @RequestBody User user) {
+    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
         userRepository.save(user);
         return ResponseEntity.ok(user);
     }
 
     @PutMapping("/{userId}")
-    public User updateuser(@PathVariable Long userId, @Valid @RequestBody User user) {
+    public User updateUser(@PathVariable Long userId, @Valid @RequestBody User user) {
         return userRepository.findById(userId)
                 .map(userFound -> {
                     //TODO: add other params update if it's not null
@@ -49,7 +49,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<?> deleteuser(@PathVariable Long userId) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long userId) {
         return userRepository.findById(userId)
                 .map(user -> {
                     userRepository.delete(user);

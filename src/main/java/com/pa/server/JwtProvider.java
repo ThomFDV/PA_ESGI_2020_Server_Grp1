@@ -24,6 +24,8 @@ public class JwtProvider {
 
         UserPrinciple userPrincipal = (UserPrinciple) authentication.getPrincipal();
 
+        System.out.println("\n\n\n" + userPrincipal.getId().toString() + "\n\n\n");
+
         return Jwts.builder()
                 .setSubject(userPrincipal.getId().toString())
                 .setClaims(userPrincipal.toMap())
@@ -52,10 +54,10 @@ public class JwtProvider {
         return false;
     }
 
-    public String getUserNameFromJwtToken(String token) {
+    public String getUserIdFromJwtToken(String token) {
         return Jwts.parser()
                 .setSigningKey(jwtSecret)
                 .parseClaimsJws(token)
-                .getBody().getSubject();
+                .getBody().get("id").toString();
     }
 }

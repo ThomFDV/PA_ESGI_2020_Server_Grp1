@@ -53,6 +53,7 @@ public class UserPrinciple implements UserDetails {
     }
     public Map<String, Object> toMap() {
         Map<String, Object> claimMap = new HashMap<>();
+        claimMap.put("id", id);
         claimMap.put("username", username);
         claimMap.put("name", name);
         claimMap.put("email", email);
