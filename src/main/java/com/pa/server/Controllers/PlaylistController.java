@@ -55,11 +55,22 @@ public class PlaylistController {
     public Playlist addMusicToPlaylist(@PathVariable long playlistId, @PathVariable long musicId) {
         Music music = musicRepository.findById(musicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + musicId));
-        Set<Music> musicList = new HashSet<>();
-        musicList.add(music);
         return playlistRepository.findById(playlistId)
                 .map(playlist -> {
-                    playlist.setMusic(musicList);
+                    playlist.addMusic(music);
+                    return playlistRepository.save(playlist);
+                }).orElseThrow(() -> new ResourceNotFoundException("Playlist not found with id " + playlistId));
+    }
+
+    @PostMapping("/multiple/{playlistId}")
+    public Playlist addMultipleMusicsToPlaylist(@PathVariable long playlistId, @RequestParam List<Long> musicsIds) {
+        return playlistRepository.findById(playlistId)
+                .map(playlist -> {
+                    for (Long musicId : musicsIds) {
+                        Music music = musicRepository.findById(musicId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + musicId));
+                        playlist.addMusic(music);
+                    }
                     return playlistRepository.save(playlist);
                 }).orElseThrow(() -> new ResourceNotFoundException("Playlist not found with id " + playlistId));
     }

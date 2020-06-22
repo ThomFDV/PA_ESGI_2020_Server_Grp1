@@ -68,4 +68,8 @@ public class Playlist {
     public void setMusic(Set<Music> music) {
         this.music = music;
     }
+
+    public void addMusic(Music music) {
+        this.music.add(music);
+    }
 }
