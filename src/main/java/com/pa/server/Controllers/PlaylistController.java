@@ -1,6 +1,8 @@
 package com.pa.server.Controllers;
 
+import com.pa.server.Models.Music;
 import com.pa.server.Models.Playlist;
+import com.pa.server.Repositories.MusicRepository;
 import com.pa.server.Repositories.PlaylistRepository;
 import com.pa.server.Repositories.UserRepository;
 import com.pa.server.exception.ResourceNotFoundException;
@@ -12,7 +14,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/playlist")
@@ -23,6 +27,9 @@ public class PlaylistController {
     
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private MusicRepository musicRepository;
     
     @GetMapping("")
     public Page<Playlist> getPlaylists(Pageable pageable) {
@@ -43,6 +50,20 @@ public class PlaylistController {
                     return playlistRepository.save(playlist);
                 }).orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
     }
+
+    @PostMapping("/{playlistId}/{musicId}")
+    public Playlist addMusicToPlaylist(@PathVariable long playlistId, @PathVariable long musicId) {
+        Music music = musicRepository.findById(musicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + musicId));
+        Set<Music> musicList = new HashSet<>();
+        musicList.add(music);
+        return playlistRepository.findById(playlistId)
+                .map(playlist -> {
+                    playlist.setMusic(musicList);
+                    return playlistRepository.save(playlist);
+                }).orElseThrow(() -> new ResourceNotFoundException("Playlist not found with id " + playlistId));
+    }
+
 
     @PutMapping("/{playlistId}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
