@@ -5,6 +5,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "playlists")
@@ -19,6 +21,12 @@ public class Playlist {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     User user;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "playlist_musics",
+        joinColumns = @JoinColumn(name = "playlist_id"),
+        inverseJoinColumns = @JoinColumn(name = "music_id"))
+    private Set<Music> music = new HashSet<>();
 
     public Playlist() {
     }
@@ -51,5 +59,17 @@ public class Playlist {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Set<Music> getMusic() {
+        return music;
+    }
+
+    public void setMusic(Set<Music> music) {
+        this.music = music;
+    }
+
+    public void addMusic(Music music) {
+        this.music.add(music);
     }
 }
