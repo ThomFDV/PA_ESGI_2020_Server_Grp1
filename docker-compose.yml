@@ -4,6 +4,8 @@ services:
   server:
     container_name: pa-server
     build: .
+    volumes:
+      - songs:/songs
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_USER=${DB_USER}
@@ -36,3 +38,4 @@ services:
 
 volumes:
   pgdata:
+  songs:
