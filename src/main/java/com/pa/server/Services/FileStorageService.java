@@ -12,11 +12,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 @Service
 public class FileStorageService {
@@ -54,6 +56,18 @@ public class FileStorageService {
         }
     }
 
+    public Stream<Path> loadAll() {
+        try {
+            return Files.walk(this.fileStorageLocation, 1)
+                    .filter(path -> !path.equals(this.fileStorageLocation))
+                    .map(this.fileStorageLocation::relativize);
+        }
+        catch (IOException e) {
+            throw new FileStorageException("Failed to read stored files", e);
+        }
+
+    }
+
     public Resource loadFileAsResource(String fileName) throws MyFileNotFoundException {
         try {
             Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
@@ -66,5 +80,19 @@ public class FileStorageService {
         } catch (MalformedURLException | MyFileNotFoundException ex) {
             throw new MyFileNotFoundException("File not found " + fileName, ex);
         }
+    }
+
+    public String readBytes(String fileName) throws IOException {
+        Path path = this.fileStorageLocation.resolve(fileName).normalize();
+        byte[] encoded = Files.readAllBytes(path);
+        return  new String(encoded, Charset.forName("UTF-8"));
+    }
+
+    public boolean areFilesEquals(String firstFile, String secondFile) throws IOException {
+        String firstFileName = firstFile + ".mp3";
+        String secondFileName = secondFile + ".mp3";
+        String firstFileBytes = readBytes(firstFileName);
+        String secondFileBytes = readBytes(secondFileName);
+        return firstFileBytes.equals(secondFileBytes);
     }
 }

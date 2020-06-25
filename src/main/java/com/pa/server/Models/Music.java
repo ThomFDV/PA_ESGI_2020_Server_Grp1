@@ -20,13 +20,16 @@ public class Music {
     @JsonIgnore
     Artist artist;
 
+    private String fileName;
+
     public Music() {
     }
 
-    public Music(Long id, String title, Artist artist) {
+    public Music(Long id, String title, Artist artist, String fileName) {
         this.id = id;
         this.title = title;
         this.artist = artist;
+        this.fileName = fileName;
     }
 
     public Long getId() {
@@ -51,5 +54,13 @@ public class Music {
 
     public void setArtist(Artist artist) {
         this.artist = artist;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }
