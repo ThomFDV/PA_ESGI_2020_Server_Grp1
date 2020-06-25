@@ -1,6 +1,8 @@
 package com.pa.server.Controllers;
 
+import com.pa.server.Models.Album;
 import com.pa.server.Models.Music;
+import com.pa.server.Repositories.AlbumRepository;
 import com.pa.server.Repositories.ArtistRepository;
 import com.pa.server.Repositories.MusicRepository;
 import com.pa.server.Services.FileStorageService;
@@ -24,6 +26,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -41,9 +44,12 @@ public class FileController {
     @Autowired
     private MusicRepository musicRepository;
 
+    @Autowired
+    private AlbumRepository albumRepository;
+
     @PostMapping("/upload")
     public UploadFileResponse uploadFile(@RequestParam("audio") MultipartFile audio, @RequestParam String title,
-                                         @RequestParam String artistName) {
+                                         @RequestParam String artistName, @RequestParam Optional<String> albumName) {
         String fileName = fileStorageService.storeFile(audio);
 
         artistRepository.findByName(artistName)
@@ -52,6 +58,10 @@ public class FileController {
                     music.setTitle(title);
                     music.setArtist(artist);
                     music.setFileName(fileName);
+                    albumRepository.findByName(albumName).map(album -> {
+                        music.setAlbum(album);
+                        return music;
+                    });
                     return musicRepository.save(music);
                 }).orElseThrow(() -> new ResourceNotFoundException("Artist not found with name " + artistName));
 
