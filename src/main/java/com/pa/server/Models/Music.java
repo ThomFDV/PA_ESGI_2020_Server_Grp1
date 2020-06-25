@@ -16,7 +16,7 @@ public class Music {
     private String title;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "music_id", nullable = false)
+    @JoinColumn(name = "artist_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     Artist artist;
 
