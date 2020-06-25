@@ -1,6 +1,7 @@
 package com.pa.server.Models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.ManyToAny;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -14,19 +15,26 @@ public class Music {
     private Long id;
     private String title;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "music_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JsonIgnore
     Artist artist;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    Album album;
+
+    private String fileName;
 
     public Music() {
     }
 
-    public Music(Long id, String title, Artist artist) {
+    public Music(Long id, String title, Artist artist, Album album, String fileName) {
         this.id = id;
         this.title = title;
         this.artist = artist;
+        this.album = album;
+        this.fileName = fileName;
     }
 
     public Long getId() {
@@ -51,5 +59,21 @@ public class Music {
 
     public void setArtist(Artist artist) {
         this.artist = artist;
+    }
+
+    public Album getAlbum() {
+        return album;
+    }
+
+    public void setAlbum(Album album) {
+        this.album = album;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }
