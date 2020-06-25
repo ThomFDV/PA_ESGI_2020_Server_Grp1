@@ -90,8 +90,14 @@ public class FileController {
     }
 
     @GetMapping("/compare")
-    public ResponseEntity readFile(@RequestParam String firstFile, @RequestParam String secondFile) throws IOException {
-        boolean result = fileStorageService.areFilesEquals(firstFile, secondFile);
+    public ResponseEntity readFile(@RequestParam long firstMusicId, @RequestParam long secondMusicId) throws IOException {
+        Music musicOne = musicRepository.findById(firstMusicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + firstMusicId));
+        Music musicTwo = musicRepository.findById(secondMusicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + secondMusicId));
+        String firstFileName = musicOne.getFileName();
+        String secondFileName = musicTwo.getFileName();
+        boolean result = fileStorageService.areFilesEquals(firstFileName, secondFileName);
         JSONObject response = new JSONObject();
         response.put("areEquals", result);
         return ResponseEntity.ok(response);

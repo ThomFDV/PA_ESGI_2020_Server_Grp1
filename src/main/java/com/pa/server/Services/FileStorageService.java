@@ -89,10 +89,8 @@ public class FileStorageService {
     }
 
     public boolean areFilesEquals(String firstFile, String secondFile) throws IOException {
-        String firstFileName = firstFile + ".mp3";
-        String secondFileName = secondFile + ".mp3";
-        String firstFileBytes = readBytes(firstFileName);
-        String secondFileBytes = readBytes(secondFileName);
+        String firstFileBytes = readBytes(firstFile);
+        String secondFileBytes = readBytes(secondFile);
         return firstFileBytes.equals(secondFileBytes);
     }
 }
