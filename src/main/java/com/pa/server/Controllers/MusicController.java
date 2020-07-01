@@ -4,6 +4,7 @@ import com.pa.server.Models.Music;
 import com.pa.server.Repositories.ArtistRepository;
 import com.pa.server.Repositories.MusicRepository;
 import com.pa.server.exception.ResourceNotFoundException;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -25,8 +28,11 @@ public class MusicController {
     private ArtistRepository artistRepository;
 
     @GetMapping("")
-    public Page<Music> getMusics(Pageable pageable) {
-        return musicRepository.findAll(pageable);
+    public ResponseEntity getMusics() {
+        ArrayList<Music> musicList = new ArrayList<Music>(musicRepository.findAll());
+        JSONObject response = new JSONObject();
+        response.put("musicList", musicList);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{artistId}")

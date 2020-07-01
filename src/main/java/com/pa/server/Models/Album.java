@@ -18,7 +18,7 @@ public class Album {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "album_id", nullable = false)
+    @JoinColumn(name = "artist_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     Artist artist;
