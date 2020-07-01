@@ -27,16 +27,19 @@ public class Music {
 
     private String fileName;
 
+    private boolean isAnalysed;
+
     public Music() {
+        this.isAnalysed = false;
     }
 
     public Music(Long id, String title, Artist artist, Album album, String fileName) {
-//    public Music(Long id, String title, Artist artist, String fileName) {
         this.id = id;
         this.title = title;
         this.artist = artist;
         this.album = album;
         this.fileName = fileName;
+        this.isAnalysed = false;
     }
 
     public Long getId() {
@@ -77,5 +80,13 @@ public class Music {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public boolean isAnalysed() {
+        return isAnalysed;
+    }
+
+    public void setAnalysed(boolean analysed) {
+        isAnalysed = analysed;
     }
 }

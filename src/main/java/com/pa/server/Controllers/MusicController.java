@@ -40,6 +40,11 @@ public class MusicController {
         return musicRepository.findByArtistId(artistId);
     }
 
+    @GetMapping("/non-analysed")
+    public List<Music> getNonAnalysedMusics() {
+        return musicRepository.findByIsAnalysedFalse();
+    }
+
     @PostMapping("/{artistId}")
     @PreAuthorize("hasRole('ARTIST') or hasRole('ADMIN')")
     public Music addMusic(@PathVariable long artistId, @Valid @RequestBody Music music) {
@@ -56,6 +61,15 @@ public class MusicController {
         return musicRepository.findById(musicId)
                 .map(musicFound -> {
                     musicFound.setTitle(music.getTitle());
+                    return musicRepository.save(musicFound);
+                }).orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + musicId));
+    }
+
+    @PutMapping("/analysed/{musicId}")
+    public Music setMusicToAnalysed(@PathVariable Long musicId) {
+        return musicRepository.findById(musicId)
+                .map(musicFound -> {
+                    musicFound.setAnalysed(true);
                     return musicRepository.save(musicFound);
                 }).orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + musicId));
     }
