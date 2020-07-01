@@ -1,8 +1,10 @@
 package com.pa.server.Controllers;
 
 import com.pa.server.Models.Music;
+import com.pa.server.Models.Similarity;
 import com.pa.server.Repositories.ArtistRepository;
 import com.pa.server.Repositories.MusicRepository;
+import com.pa.server.Repositories.SimilarityRepository;
 import com.pa.server.exception.ResourceNotFoundException;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/music")
@@ -26,6 +29,9 @@ public class MusicController {
 
     @Autowired
     private ArtistRepository artistRepository;
+
+    @Autowired
+    private SimilarityRepository similarityRepository;
 
     @GetMapping("")
     public ResponseEntity getMusics() {
@@ -53,6 +59,24 @@ public class MusicController {
                     music.setArtist(artist);
                     return musicRepository.save(music);
                 }).orElseThrow(() -> new ResourceNotFoundException("Artist not found with id " + artistId));
+    }
+
+    @PostMapping("/similarity/{fileName1}/{fileName2}")
+    public ResponseEntity addSimilarity(@PathVariable String fileName1, @PathVariable String fileName2,
+                                        @RequestBody Similarity similarity) {
+        Music music1 = musicRepository.findByFileName(fileName1 + ".mp3");
+        Music music2 = musicRepository.findByFileName(fileName2 + ".mp3");
+        Similarity fullSimilarity = similarityRepository.save(similarity);
+        music1.setSimilarity(fullSimilarity);
+        music1.setAnalysed(true);
+        music2.setSimilarity(fullSimilarity);
+        music2.setAnalysed(true);
+        musicRepository.save(music1);
+        musicRepository.save(music2);
+        JSONObject response = new JSONObject();
+        response.put("firstMusic", music1);
+        response.put("secondMusic", music2);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{musicId}")

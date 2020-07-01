@@ -5,6 +5,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "musics")
@@ -28,6 +30,12 @@ public class Music {
     private String fileName;
 
     private boolean isAnalysed;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "music_similarities",
+            joinColumns = @JoinColumn(name = "music_id"),
+            inverseJoinColumns = @JoinColumn(name = "similarity_id"))
+    private Set<Similarity> similarity = new HashSet<>();
 
     public Music() {
         this.isAnalysed = false;
@@ -88,5 +96,13 @@ public class Music {
 
     public void setAnalysed(boolean analysed) {
         isAnalysed = analysed;
+    }
+
+    public Set<Similarity> getSimilarity() {
+        return similarity;
+    }
+
+    public void setSimilarity(Similarity similarity) {
+        this.similarity.add(similarity);
     }
 }
