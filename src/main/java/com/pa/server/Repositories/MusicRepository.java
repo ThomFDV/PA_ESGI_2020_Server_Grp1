@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface MusicRepository extends JpaRepository<Music, Long> {
     List<Music> findByArtistId(long artistId);
+    List<Music> findByIsAnalysedFalse();
+    Music findByFileName(String fileName);
 }
