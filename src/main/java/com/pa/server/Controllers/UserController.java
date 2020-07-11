@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -42,7 +41,6 @@ public class UserController {
     public User updateUser(@PathVariable Long userId, @Valid @RequestBody User user) {
         return userRepository.findById(userId)
                 .map(userFound -> {
-                    //TODO: add other params update if it's not null
                     userFound.setName(user.getName());
                     return userRepository.save(userFound);
                 }).orElseThrow(() -> new ResourceNotFoundException("user not found with id " + userId));
