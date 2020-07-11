@@ -1,19 +1,25 @@
 package com.pa.server.Controllers;
 
+import com.pa.server.DAO.PlaylistMusicDAO;
 import com.pa.server.Models.Music;
 import com.pa.server.Models.Playlist;
+import com.pa.server.Models.User;
 import com.pa.server.Repositories.MusicRepository;
 import com.pa.server.Repositories.PlaylistRepository;
 import com.pa.server.Repositories.UserRepository;
 import com.pa.server.exception.ResourceNotFoundException;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,36 +36,45 @@ public class PlaylistController {
 
     @Autowired
     private MusicRepository musicRepository;
-    
-    @GetMapping("")
-    public Page<Playlist> getPlaylists(Pageable pageable) {
-        return playlistRepository.findAll(pageable);
+
+    @GetMapping
+    public ResponseEntity getPlaylists() {
+        ArrayList<Playlist> playlists = new ArrayList<>(playlistRepository.findAll());
+        JSONObject response = new JSONObject();
+        response.put("playlistList", playlists);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{userId}")
-    public List<Playlist> getPlaylistsByUserId(@PathVariable long userId) {
-        return playlistRepository.findByUserId(userId);
+    @GetMapping("/user")
+    public ResponseEntity getConnectedUserPlaylists() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        ArrayList<Playlist> playlists = new ArrayList<>(playlistRepository.findByUserId(user.getId()));
+        JSONObject response = new JSONObject();
+        response.put("playlistList", playlists);
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{userId}")
+    @PostMapping
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public Playlist addPlaylist(@PathVariable long userId, @Valid @RequestBody Playlist playlist) {
-        return userRepository.findById(userId)
+    public Playlist addPlaylist(@Valid @RequestBody Playlist playlist) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userRepository.findByUsername(userDetails.getUsername())
                 .map(user -> {
                     playlist.setUser(user);
                     return playlistRepository.save(playlist);
-                }).orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
+                }).orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userDetails.getUsername()));
     }
 
-    @PostMapping("/{playlistId}/{musicId}")
-    public Playlist addMusicToPlaylist(@PathVariable long playlistId, @PathVariable long musicId) {
-        Music music = musicRepository.findById(musicId)
-                .orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + musicId));
-        return playlistRepository.findById(playlistId)
+    @PostMapping("/music")
+    public Playlist addMusicToPlaylist(@RequestBody PlaylistMusicDAO playlistMusicDAO) {
+        Music music = musicRepository.findByTitle(playlistMusicDAO.getMusicTitle())
+                .orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + playlistMusicDAO.getMusicTitle()));
+        return playlistRepository.findByName(playlistMusicDAO.getPlaylistName())
                 .map(playlist -> {
                     playlist.addMusic(music);
                     return playlistRepository.save(playlist);
-                }).orElseThrow(() -> new ResourceNotFoundException("Playlist not found with id " + playlistId));
+                }).orElseThrow(() -> new ResourceNotFoundException("Playlist not found with id " + playlistMusicDAO.getPlaylistName()));
     }
 
     @PostMapping("/multiple/{playlistId}")
