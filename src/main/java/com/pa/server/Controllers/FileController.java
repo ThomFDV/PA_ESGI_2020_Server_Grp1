@@ -1,6 +1,7 @@
 package com.pa.server.Controllers;
 
 import com.pa.server.Models.Album;
+import com.pa.server.Models.Artist;
 import com.pa.server.Models.Music;
 import com.pa.server.Repositories.AlbumRepository;
 import com.pa.server.Repositories.ArtistRepository;
@@ -10,6 +11,8 @@ import com.pa.server.exception.MyFileNotFoundException;
 import com.pa.server.exception.ResourceNotFoundException;
 import com.pa.server.payload.UploadFileResponse;
 import net.minidev.json.JSONObject;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.xml.sax.SAXException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -48,22 +52,24 @@ public class FileController {
     private AlbumRepository albumRepository;
 
     @PostMapping("/upload")
-    public UploadFileResponse uploadFile(@RequestParam("audio") MultipartFile audio, @RequestParam String title,
-                                         @RequestParam String artistName, @RequestParam Optional<String> albumName) {
+    public UploadFileResponse uploadFile(@RequestParam("audio") MultipartFile audio)
+                                        throws TikaException, IOException, SAXException {
         String fileName = fileStorageService.storeFile(audio);
-
-        artistRepository.findByName(artistName)
-                .map(artist -> {
-                    Music music = new Music();
-                    music.setTitle(title);
-                    music.setArtist(artist);
-                    music.setFileName(fileName);
-                    albumRepository.findByName(albumName).map(album -> {
-                        music.setAlbum(album);
-                        return music;
-                    });
-                    return musicRepository.save(music);
-                }).orElseThrow(() -> new ResourceNotFoundException("Artist not found with name " + artistName));
+        Metadata fileMetadata = fileStorageService.getMetadata(fileName);
+        String artistName = fileMetadata.get("xmpDM:artist");
+        String title = fileMetadata.get("title");
+        String albumName = fileMetadata.get("xmpDM:album");
+        Artist artist = artistRepository.findByName(artistName).orElse(null);
+        if (artist == null) {
+            artist = artistRepository.save(new Artist(artistName));
+        }
+        Music music = new Music();
+        music.setTitle(title);
+        music.setArtist(artist);
+        music.setFileName(fileName);
+        music.setAnalysed(false);
+        music.setAlbum(albumRepository.findByName(Optional.ofNullable(albumName)).orElse(null));
+        musicRepository.save(music);
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/file/download/")
@@ -72,13 +78,10 @@ public class FileController {
         return new UploadFileResponse(fileName, fileDownloadUri, audio.getContentType(), audio.getSize());
     }
 
-    @GetMapping("/download/{musicId}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable long musicId) throws MyFileNotFoundException {
+    @GetMapping("/download/{fileName}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) throws MyFileNotFoundException {
 
-        Music music = musicRepository.findById(musicId)
-                .orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + musicId));
-
-        Resource resource = fileStorageService.loadFileAsResource(music.getFileName());
+        Resource resource = fileStorageService.loadFileAsResource(fileName);
 
         String contentType = "audio/mpeg";
 
@@ -92,7 +95,7 @@ public class FileController {
     public ResponseEntity listFiles(Model model) {
         model.addAttribute("files link", fileStorageService.loadAll().map(
                 path -> ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/download/")
+                        .path("/file/download/")
                         .path(path.getFileName().toString())
                         .toUriString())
                 .collect(Collectors.toList()));
