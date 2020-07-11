@@ -3,14 +3,23 @@ package com.pa.server.Services;
 import com.pa.server.exception.FileStorageException;
 import com.pa.server.exception.MyFileNotFoundException;
 import com.pa.server.property.FileStorageProperties;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.audio.AudioParser;
+import org.apache.tika.parser.mp3.Mp3Parser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -92,5 +101,20 @@ public class FileStorageService {
         String firstFileBytes = readBytes(firstFile);
         String secondFileBytes = readBytes(secondFile);
         return firstFileBytes.equals(secondFileBytes);
+    }
+
+    public Metadata getMetadata(String fileName) throws IOException, TikaException, SAXException {
+        Path path = this.fileStorageLocation.resolve(fileName).normalize();
+        InputStream input = new FileInputStream(new File(String.valueOf(path)));
+        ContentHandler handler = new DefaultHandler();
+        Metadata metadata = new Metadata();
+        ParseContext parseContext = new ParseContext();
+        Parser parsermp3 = new Mp3Parser();
+        parsermp3.parse(input, handler, metadata, parseContext);
+        input.close();
+        System.out.println("\nmetadata\n" + metadata + "\n\n");
+        System.out.println("Title: " + metadata.get("title"));
+        System.out.println("Artists: " + metadata.get("xmpDM:artist") + "\n\n");
+        return metadata;
     }
 }
