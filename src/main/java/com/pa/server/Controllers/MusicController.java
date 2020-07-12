@@ -5,20 +5,20 @@ import com.pa.server.Models.Similarity;
 import com.pa.server.Repositories.ArtistRepository;
 import com.pa.server.Repositories.MusicRepository;
 import com.pa.server.Repositories.SimilarityRepository;
+import com.pa.server.Services.FileStorageService;
+import com.pa.server.exception.MyFileNotFoundException;
 import com.pa.server.exception.ResourceNotFoundException;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @RestController
 @RequestMapping("/music")
@@ -32,6 +32,9 @@ public class MusicController {
 
     @Autowired
     private SimilarityRepository similarityRepository;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     @GetMapping("")
     public ResponseEntity getMusics() {
@@ -101,10 +104,22 @@ public class MusicController {
     @DeleteMapping("/{musicId}")
     @PreAuthorize("hasRole('ARTIST') or hasRole('ADMIN')")
     public ResponseEntity<?> deleteMusic(@PathVariable Long musicId) {
+        AtomicBoolean fileRemoveRes= new AtomicBoolean(false);
         return musicRepository.findById(musicId)
                 .map(music -> {
-                    musicRepository.delete(music);
-                    return ResponseEntity.ok().build();
+                    try {
+                        fileRemoveRes.set(fileStorageService.removeFile(music.getFileName()));
+                    } catch (MyFileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    if(fileRemoveRes.equals( true)){
+                        musicRepository.delete(music);
+                        return ResponseEntity.ok().build();
+                    }else{
+                        return ResponseEntity.notFound().build();
+                    }
                 }).orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + musicId));
     }
 }
