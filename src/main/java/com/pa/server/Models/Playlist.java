@@ -15,6 +15,7 @@ public class Playlist {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
+    private String description;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -31,9 +32,9 @@ public class Playlist {
     public Playlist() {
     }
 
-    public Playlist(Long id, String name, User user) {
-        this.id = id;
+    public Playlist(String name, String description, User user) {
         this.name = name;
+        this.description = description;
         this.user = user;
     }
 
@@ -51,6 +52,14 @@ public class Playlist {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public User getUser() {

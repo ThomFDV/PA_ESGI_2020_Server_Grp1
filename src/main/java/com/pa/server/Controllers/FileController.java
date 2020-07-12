@@ -91,6 +91,18 @@ public class FileController {
                 .body(resource);
     }
 
+    @GetMapping("/read/{fileName}")
+    public ResponseEntity<Resource> readFile(@PathVariable String fileName) throws MyFileNotFoundException {
+
+        Resource resource = fileStorageService.loadFileAsResource(fileName);
+
+        String contentType = "audio/mpeg";
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .body(resource);
+    }
+
     @GetMapping
     public ResponseEntity listFiles(Model model) {
         model.addAttribute("files link", fileStorageService.loadAll().map(
