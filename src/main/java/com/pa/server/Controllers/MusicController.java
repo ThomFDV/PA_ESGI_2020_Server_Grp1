@@ -108,18 +108,14 @@ public class MusicController {
         return musicRepository.findById(musicId)
                 .map(music -> {
                     try {
-                        fileRemoveRes.set(fileStorageService.removeFile(music.getFileName()));
+                        boolean remRes = fileStorageService.removeFile( music.getFileName()  );
                     } catch (MyFileNotFoundException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    if(fileRemoveRes.equals( true)){
-                        musicRepository.delete(music);
-                        return ResponseEntity.ok().build();
-                    }else{
-                        return ResponseEntity.notFound().build();
-                    }
+                    musicRepository.delete(music);
+                    return ResponseEntity.ok().build();
                 }).orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + musicId));
     }
 }
