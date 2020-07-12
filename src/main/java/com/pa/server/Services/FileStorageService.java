@@ -91,6 +91,25 @@ public class FileStorageService {
         }
     }
 
+    public boolean removeFile(String fileName) throws MyFileNotFoundException , IOException{
+        boolean removed = false;
+        try {
+            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if(resource.exists()) {
+                removed = Files.deleteIfExists(filePath);
+            } else {
+                throw new MyFileNotFoundException("File not found " + fileName);
+            }
+        } catch (MalformedURLException | MyFileNotFoundException ex) {
+            throw new MyFileNotFoundException("File not found " + fileName, ex);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return removed;
+    }
+
     public String readBytes(String fileName) throws IOException {
         Path path = this.fileStorageLocation.resolve(fileName).normalize();
         byte[] encoded = Files.readAllBytes(path);
