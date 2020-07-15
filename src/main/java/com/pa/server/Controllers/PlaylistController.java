@@ -69,10 +69,10 @@ public class PlaylistController {
     @PostMapping("/music")
     public Playlist addMusicToPlaylist(@RequestBody PlaylistMusicDAO playlistMusicDAO) {
         Music music = musicRepository.findByTitle(playlistMusicDAO.getMusicTitle())
-                .orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + playlistMusicDAO.getMusicTitle()));
+                .orElseThrow(() -> new ResourceNotFoundException("Music not found with Title " + playlistMusicDAO.getMusicTitle()));
         return playlistRepository.findByName(playlistMusicDAO.getPlaylistName())
                 .map(playlist -> {
-                    playlist.addMusic(music);
+                    playlist.addMusic(music.getFileName());
                     return playlistRepository.save(playlist);
                 }).orElseThrow(() -> new ResourceNotFoundException("Playlist not found with id " + playlistMusicDAO.getPlaylistName()));
     }
@@ -84,7 +84,7 @@ public class PlaylistController {
                     for (Long musicId : musicsIds) {
                         Music music = musicRepository.findById(musicId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Music not found with id " + musicId));
-                        playlist.addMusic(music);
+                        playlist.addMusic(music.getFileName());
                     }
                     return playlistRepository.save(playlist);
                 }).orElseThrow(() -> new ResourceNotFoundException("Playlist not found with id " + playlistId));
