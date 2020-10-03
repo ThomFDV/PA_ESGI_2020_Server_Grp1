@@ -1,5 +1,6 @@
 package com.pa.server.Controllers;
 
+import com.pa.server.MessageBroker.Sender;
 import com.pa.server.Models.Album;
 import com.pa.server.Models.Artist;
 import com.pa.server.Models.Music;
@@ -51,6 +52,9 @@ public class FileController {
     @Autowired
     private AlbumRepository albumRepository;
 
+    @Autowired
+    private Sender sender;
+
     @PostMapping("/upload")
     public UploadFileResponse uploadFile(@RequestParam("audio") MultipartFile audio)
                                         throws TikaException, IOException, SAXException {
@@ -70,6 +74,7 @@ public class FileController {
         music.setAnalysed(false);
         music.setAlbum(albumRepository.findByName(Optional.ofNullable(albumName)).orElse(null));
         musicRepository.save(music);
+        sender.send(music.getTitle());
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/file/download/")

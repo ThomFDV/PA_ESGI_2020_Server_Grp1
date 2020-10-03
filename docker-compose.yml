@@ -17,7 +17,7 @@ services:
 
   db:
     container_name: pa-database
-    image: postgres
+    image: postgres:12
     restart: always
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -33,7 +33,7 @@ services:
     image: adminer
     restart: always
     ports:
-      - '8083:8080'
+      - '8086:8080'
     depends_on:
       - db
 
