@@ -79,6 +79,7 @@ public class FileController {
         JSONObject queueMessage = new JSONObject();
         queueMessage.put("musicId", music.getId());
         queueMessage.put("musicTitle", music.getTitle());
+        queueMessage.put("fileName", music.getFileName());
         AMQPProducer.sendMessage(AMQPProducer.initConnection(), queueMessage.toJSONString());
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
