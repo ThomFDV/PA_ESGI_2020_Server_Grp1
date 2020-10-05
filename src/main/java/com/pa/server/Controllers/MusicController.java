@@ -1,6 +1,5 @@
 package com.pa.server.Controllers;
 
-import com.pa.server.MessageBroker.Sender;
 import com.pa.server.Models.Music;
 import com.pa.server.Models.Similarity;
 import com.pa.server.Repositories.ArtistRepository;

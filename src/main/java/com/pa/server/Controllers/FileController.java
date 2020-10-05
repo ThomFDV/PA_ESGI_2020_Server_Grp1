@@ -1,7 +1,7 @@
 package com.pa.server.Controllers;
 
-import com.pa.server.MessageBroker.Sender;
-import com.pa.server.Models.Album;
+
+import com.pa.server.MessageBroker.AMQPProducer;
 import com.pa.server.Models.Artist;
 import com.pa.server.Models.Music;
 import com.pa.server.Repositories.AlbumRepository;
@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.core.io.Resource;
@@ -28,9 +27,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.xml.sax.SAXException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -53,11 +53,12 @@ public class FileController {
     private AlbumRepository albumRepository;
 
     @Autowired
-    private Sender sender;
+    private AMQPProducer AMQPProducer;
 
     @PostMapping("/upload")
     public UploadFileResponse uploadFile(@RequestParam("audio") MultipartFile audio)
-                                        throws TikaException, IOException, SAXException {
+            throws TikaException, IOException, SAXException, NoSuchAlgorithmException,
+            KeyManagementException, URISyntaxException {
         String fileName = fileStorageService.storeFile(audio);
         Metadata fileMetadata = fileStorageService.getMetadata(fileName);
         String artistName = fileMetadata.get("xmpDM:artist");
@@ -74,7 +75,11 @@ public class FileController {
         music.setAnalysed(false);
         music.setAlbum(albumRepository.findByName(Optional.ofNullable(albumName)).orElse(null));
         musicRepository.save(music);
-        sender.send(music.getTitle());
+
+        JSONObject queueMessage = new JSONObject();
+        queueMessage.put("musicId", music.getId());
+        queueMessage.put("musicTitle", music.getTitle());
+        AMQPProducer.sendMessage(AMQPProducer.initConnection(), queueMessage.toJSONString());
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/file/download/")
